@@ -1,6 +1,6 @@
 const path = require('path')
 const { minimatch } = require('minimatch')
-const createModuleIdFactory = require('./createModuleIdFactory')
+const createCreateModuleIdFactory = require('./createModuleIdFactory')
 const { getChunksConfig } = require('../cli/getChunksConfig')
 const { getOutputDir } = require('../cli/utils')
 const { MetroSerializer } = require('./MetroSerializer')
@@ -23,13 +23,13 @@ const bootstraps = [
  *
  * @param {import('metro-config').MetroConfig} config
  */
-const serializeChunks = (config, chunksConfig, chunkId) => {
+const serializeChunks = (config, chunksConfig, chunkId, options) => {
   const customSerializer = MetroSerializer({ isChunkBundle })
   let result = {
     ...config.serializer,
     getRunModuleStatement: customSerializer.getRunModuleStatement,
     customSerializer: customSerializer,
-    createModuleIdFactory: createModuleIdFactory,
+    createModuleIdFactory: createCreateModuleIdFactory(options),
   }
   if (!isChunkBundle) {
     return result
@@ -114,7 +114,7 @@ const serializeChunks = (config, chunksConfig, chunkId) => {
  *
  * @param {import('metro-config').MetroConfig} config
  */
-function withChunksConfig(config) {
+function withChunksConfig(config, options) {
   const chunksConfig = isChunkBundle ? getChunksConfig({ root }) : null
 
   return {
@@ -124,7 +124,7 @@ function withChunksConfig(config) {
       assetExts: [...config.resolver.assetExts, 'chunk'],
       resolveRequest: resolveRequest(config, chunksConfig, chunkId),
     },
-    serializer: serializeChunks(config, chunksConfig, chunkId),
+    serializer: serializeChunks(config, chunksConfig, chunkId, options),
   }
 }
 
