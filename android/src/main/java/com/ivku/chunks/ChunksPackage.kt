@@ -1,4 +1,4 @@
-package com.chunks
+package com.ivku.chunks
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 buildscript {
   // Buildscript is evaluated before everything else so we can't use getExtOrDefault
   def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["Chunks_kotlinVersion"]
@@ -47,9 +49,35 @@ def supportsNamespace() {
   return (major == 7 && minor >= 3) || major >= 8
 }
 
+static def findNodeModules(baseDir) {
+  def basePath = baseDir.toPath().normalize()
+  // Node"s module resolution algorithm searches up to the root directory,
+  // after which the base path will be null
+  while (basePath) {
+    def nodeModulesPath = Paths.get(basePath.toString(), "node_modules")
+    def reactNativePath = Paths.get(nodeModulesPath.toString(), "react-native")
+    if (nodeModulesPath.toFile().exists() && reactNativePath.toFile().exists()) {
+      return nodeModulesPath.toString()
+    }
+    basePath = basePath.getParent()
+  }
+  throw new GradleException("Failed to find node_modules/ path!")
+}
+
+def nodeModules = findNodeModules(projectDir)
+
+def resolveBuildType() {
+    Gradle gradle = getGradle()
+    String tskReqStr = gradle.getStartParameter().getTaskRequests()["args"].toString()
+
+    return tskReqStr.contains("Release") ? "release" : "debug"
+}
+
+def prefabHeadersDir = project.file("$buildDir/headers/react_native_chunks/")
+
 android {
   if (supportsNamespace()) {
-    namespace "com.chunks"
+    namespace "com.ivku.chunks"
 
     sourceSets {
       main {
@@ -58,17 +86,43 @@ android {
     }
   }
 
+  ndkVersion getExtOrDefault("ndkVersion")
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
 
+    externalNativeBuild {
+      cmake {
+        cppFlags "-O2 -frtti -fexceptions -Wall -Wno-unused-variable -fstack-protector-all"
+        arguments "-DANDROID_STL=c++_shared",
+                "-DNODE_MODULES_DIR=${nodeModules}"
+        abiFilters (*reactNativeArchitectures())
+      }
+    }
+  }
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
   }
 
   buildTypes {
     release {
       minifyEnabled false
+    }
+  }
+
+  buildFeatures {
+    prefab true
+    prefabPublishing true
+  }
+
+  prefab {
+    ReactNativeChunks {
+      headers prefabHeadersDir.absolutePath
     }
   }
 
@@ -79,6 +133,27 @@ android {
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  packagingOptions {
+    doNotStrip resolveBuildType() == "debug" ? "**/**/*.so" : ""
+    excludes = [
+            "META-INF",
+            "META-INF/**",
+            "**/libc++_shared.so",
+            "**/libfbjni.so",
+            "**/libjsi.so",
+            "**/libfolly_json.so",
+            "**/libfolly_runtime.so",
+            "**/libglog.so",
+            "**/libhermes.so",
+            "**/libhermes-executor-debug.so",
+            "**/libhermes_executor.so",
+            "**/libreactnativejni.so",
+            "**/libturbomodulejsijni.so",
+            "**/libreact_nativemodule_core.so",
+            "**/libjscexecutor.so"
+    ]
   }
 }
 
@@ -97,3 +172,30 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
+task createNativeDepsDirectories() {
+    prefabHeadersDir.mkdirs()
+}
+
+task prepareHeaders(type: Copy) {
+  from fileTree('../cpp').filter { it.isFile() }
+  include "*.h"
+  into "${prefabHeadersDir.absolutePath}/react-native-chunks/"
+  includeEmptyDirs = false
+}
+
+preBuild.dependsOn(prepareHeaders)
+
+task deleteCmakeCache() {
+  doFirst {
+    delete "${projectDir}/.cxx"
+    delete "${nodeModules}/react-native-chunks/android/.cxx"
+    delete "${nodeModules}/react-native-chunks/android/build"
+  }
+}
+
+tasks.configureEach { task ->
+  // C++ clean
+  if (task.name.contains("clean")) {
+    task.dependsOn(deleteCmakeCache)
+  }
+}

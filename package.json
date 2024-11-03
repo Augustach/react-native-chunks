@@ -1,7 +1,7 @@
 {
   "name": "react-native-chunks",
   "version": "0.1.0",
-  "description": "-",
+  "description": "A tool that allows you to split your bundle into several smaller chunks.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
@@ -15,6 +15,14 @@
         "types": "./lib/typescript/commonjs/src/index.d.ts",
         "default": "./lib/commonjs/index.js"
       }
+    },
+    "./metro-config": {
+      "import": "./lib/module/metro-config/index.js",
+      "require": "./lib/commonjs/metro-config/index.js"
+    },
+    "./cli": {
+      "import": "./lib/module/cli/index.js",
+      "require": "./lib/commonjs/cli/index.js"
     }
   },
   "files": [
@@ -23,6 +31,7 @@
     "android",
     "ios",
     "cpp",
+    "react-native.config.js",
     "*.podspec",
     "!ios/build",
     "!android/build",
@@ -37,17 +46,20 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-chunks-example",
+    "codepush-example": "yarn workspace react-native-chunks-codepush-example",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli android/build example/android/build example/android/app/build codepush-example/ios/build lib codepush-example/android/build codepush-example/android/app/build codepush-example/ios/build lib",
     "prepare": "bob build",
     "release": "release-it"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "ota",
+    "codepush"
   ],
   "repository": {
     "type": "git",
@@ -65,7 +77,7 @@
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.5.0",
-    "@react-native/eslint-config": "^0.73.1",
+    "@react-native/eslint-config": "^0.75.3",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.2.44",
@@ -91,7 +103,8 @@
     "react-native": "*"
   },
   "workspaces": [
-    "example"
+    "example",
+    "codepush-example"
   ],
   "packageManager": "yarn@3.6.1",
   "jest": {
@@ -123,37 +136,10 @@
       }
     }
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@react-native",
-      "prettier"
-    ],
-    "rules": {
-      "react/react-in-jsx-scope": "off",
-      "prettier/prettier": [
-        "error",
-        {
-          "quoteProps": "consistent",
-          "singleQuote": true,
-          "tabWidth": 2,
-          "trailingComma": "es5",
-          "useTabs": false
-        }
-      ]
-    }
-  },
   "eslintIgnore": [
     "node_modules/",
     "lib/"
   ],
-  "prettier": {
-    "quoteProps": "consistent",
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "useTabs": false
-  },
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
@@ -183,5 +169,8 @@
     "type": "module-legacy",
     "languages": "kotlin-swift",
     "version": "0.41.2"
+  },
+  "dependencies": {
+    "minimatch": "^10.0.1"
   }
 }
