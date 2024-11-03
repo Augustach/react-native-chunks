@@ -1,9 +1,10 @@
-const path = require('path');
-const { getDefaultConfig } = require('@react-native/metro-config');
-const { getConfig } = require('react-native-builder-bob/metro-config');
-const pkg = require('../package.json');
+const path = require('path')
+const { getDefaultConfig } = require('@react-native/metro-config')
+const { getConfig } = require('react-native-builder-bob/metro-config')
+const pkg = require('../package.json')
+const { withChunksConfig } = require('../src/metro-config/withChunksConfig')
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(__dirname, '..')
 
 /**
  * Metro configuration
@@ -11,8 +12,10 @@ const root = path.resolve(__dirname, '..');
  *
  * @type {import('metro-config').MetroConfig}
  */
-module.exports = getConfig(getDefaultConfig(__dirname), {
+const config = getConfig(getDefaultConfig(__dirname), {
   root,
   pkg,
   project: __dirname,
-});
+})
+
+module.exports = withChunksConfig(config)

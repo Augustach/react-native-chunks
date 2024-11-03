@@ -1,0 +1,6 @@
+ios/.xcode.env.local
+ios/*/xcuserdata
+
+.chunks
+
+output/

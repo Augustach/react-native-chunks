@@ -28,7 +28,7 @@ react {
     // nodeExecutableAndArgs = ["node"]
     //
     //   The command to run when bundling. By default is 'bundle'
-    // bundleCommand = "ram-bundle"
+    bundleCommand = "chunk-bundle"
     //
     //   The path to the CLI configuration file. Default is empty.
     // bundleConfig = file(../rn-cli.config.js)
@@ -80,6 +80,7 @@ android {
     namespace "chunks.example"
     defaultConfig {
         applicationId "chunks.example"
+        resValue 'string', "CHUNKS_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -103,6 +104,7 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            debuggable true
         }
     }
 }

@@ -1,5 +1,5 @@
-import { AppRegistry } from 'react-native';
-import App from './src/App';
-import { name as appName } from './app.json';
+import './node_modules_chunk'
 
-AppRegistry.registerComponent(appName, () => App);
+import { app } from './root'
+
+app()
