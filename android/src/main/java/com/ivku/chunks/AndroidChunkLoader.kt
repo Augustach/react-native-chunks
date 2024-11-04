@@ -1,5 +1,6 @@
 package com.ivku.chunks
 
+import android.content.res.AssetManager
 import androidx.annotation.Keep
 import com.facebook.jni.HybridData
 import com.facebook.proguard.annotations.DoNotStrip
@@ -24,6 +25,8 @@ class AndroidChunkLoader(context: ReactApplicationContext) {
   }
 
   external fun loadChunk(uri: String, name: String)
+
+  external fun loadChunkFormAssets(assets: AssetManager, uri: String, name: String)
 
   // private C++ funcs
   private external fun initHybrid(jsContext: Long, jsCallInvokerHolder: CallInvokerHolderImpl): HybridData

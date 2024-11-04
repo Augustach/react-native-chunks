@@ -16,6 +16,7 @@ class ChunksModule(reactContext: ReactApplicationContext) :
 
   companion object {
     const val NAME = "Chunks"
+    const val ASSETS_PREFIX = "assets://"
     const val CHUNKS_APK_BUILD_TIME = "CHUNKS_APK_BUILD_TIME"
     init {
       try {
@@ -35,9 +36,15 @@ class ChunksModule(reactContext: ReactApplicationContext) :
   @ReactMethod(isBlockingSynchronousMethod = true)
   fun loadChunk(uri: String, name: String?) {
     val sourceUri = name ?: uri
+    val loader = AndroidChunkLoader(reactApplicationContext)
+
+    if (uri.startsWith(ASSETS_PREFIX)) {
+      val assetFileName = uri.replace(ASSETS_PREFIX, "")
+      loader.loadChunkFormAssets(reactApplicationContext.assets, assetFileName, sourceUri)
+      return
+    }
 
     val file = File(uri)
-    val loader = AndroidChunkLoader(reactApplicationContext)
 
     if (file.exists()) {
       loader.loadChunk(uri, sourceUri)
@@ -48,12 +55,6 @@ class ChunksModule(reactContext: ReactApplicationContext) :
   }
 
   private fun assetFile(uri: String): File {
-    if (uri.startsWith("assets://")) {
-      val assetFileName = uri.replace("assets://", "")
-      val assetInputStream = reactApplicationContext.assets.open(assetFileName)
-      return createOrGetRawResourceFile(assetFileName, assetInputStream)
-    }
-
     val resourceId = reactApplicationContext.resources.getIdentifier(uri, "raw", reactApplicationContext.packageName)
     if (resourceId == 0) {
         throw FileNotFoundException("Resource not found for uri: $uri")

@@ -10,6 +10,10 @@
 namespace react_native_chunks
 {
 
+    struct JAssetManager : facebook::jni::JavaClass<JAssetManager> {
+        static constexpr auto kJavaDescriptor = "Landroid/content/res/AssetManager;";
+    };
+
     using namespace facebook;
 
     class AndroidChunkLoader : public jni::HybridClass<AndroidChunkLoader> {
@@ -22,6 +26,8 @@ namespace react_native_chunks
         }
 
         void loadChunk(const std::string &uri, const std::string &name);
+
+        void loadChunkFormAssets(const jni::alias_ref<JAssetManager::javaobject>& assetManager, const std::string &assetName, const std::string &name);
 
     private:
         friend HybridBase;
