@@ -29,7 +29,6 @@ target_include_directories(
     "src/main/cpp"
     "${NODE_MODULES_DIR}/react-native/ReactCommon"
     "${NODE_MODULES_DIR}/react-native/ReactCommon/jsiexecutor"
-    "${NODE_MODULES_DIR}/react-native/ReactCommon/jsiexecutor/jsireact"
     "${NODE_MODULES_DIR}/react-native/ReactCommon/runtimeexecutor"
     "${NODE_MODULES_DIR}/react-native/ReactCommon/callinvoker"
     "${NODE_MODULES_DIR}/react-native/ReactAndroid/src/main/jni/react/turbomodule" # <-- CallInvokerHolder JNI wrapper
@@ -39,8 +38,7 @@ target_include_directories(
 target_link_libraries(
         ${PACKAGE_NAME}
         android                             # <-- Android JNI core
-        ReactAndroid::jsi                   # <-- RN: JSI
-        ReactAndroid::folly_runtime
-        ReactAndroid::reactnativejni        # <-- RN: React Native JNI bindings
+        ReactAndroid::jsi                                 # <-- RN: JSI
+        ReactAndroid::reactnative                         # <-- RN: React Native JNI bindings
         fbjni::fbjni                        # <-- fbjni
 )
