@@ -1,6 +1,6 @@
 {
   "name": "react-native-chunks",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A tool that allows you to split your bundle into several smaller chunks.",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
